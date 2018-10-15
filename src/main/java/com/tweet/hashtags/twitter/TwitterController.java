@@ -1,13 +1,24 @@
 package com.tweet.hashtags.twitter;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tweet.hashtags.util.ApplicationResponse;
 import com.tweet.hashtags.util.MapBuilder;
+
+import org.apache.tomcat.jni.Address;
 import org.springframework.web.bind.annotation.*;
+
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
+import java.net.URL;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 
 @RestController
@@ -47,12 +58,29 @@ public class TwitterController {
             MediaEntity[] media = status.getMediaEntities(); //get the media entities from the status
             System.out.println("Get Id : " + status.getId());
             System.out.println("Get retweet count: " + status.getRetweetCount());
-
+            String city="";
+            String country="";
             TweetModel tweetModel = new TweetModel();
 
-            tweetModel.setScreenName(status.getUser().getScreenName());
+            tweetModel.setScreenName(status.getUser().getName());
             tweetModel.setText(status.getText());
-
+            Date dt=status.getCreatedAt();
+            Timestamp ts=new Timestamp(dt.getTime());
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String date= formatter.format(ts);
+            System.out.println("TIME AFTER FORMAT ==="+date);
+            tweetModel.setCreatedDt(date);
+            if(status.getPlace()!=null){
+		           country=status.getPlace().getCountry();
+		           city=status.getPlace().getFullName();
+		            System.out.println("CITY & COUNTRY ==="+city+" , "+country);
+            }
+            else {
+            	city="Bangalore";
+            	country="India";	
+            }
+            tweetModel.setCity(city);
+            tweetModel.setCountry(country);
             List<MediaModel> mediaList = new ArrayList<>();
 
             for(MediaEntity m : media){ //search trough your entities
